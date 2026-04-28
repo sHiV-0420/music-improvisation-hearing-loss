@@ -1,0 +1,604 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .app {
+    font-family: 'DM Sans', var(--font-sans);
+    background: var(--color-background-tertiary);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--color-background-primary);
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    width: 36px; height: 36px;
+    background: #1D9E75;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo svg { width: 20px; height: 20px; }
+
+  .header-text h1 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .header-text p {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 1px;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #888;
+    margin-left: auto;
+  }
+  .status-dot.active { background: #1D9E75; }
+
+  .main { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1.25rem;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-tertiary);
+    margin-bottom: 0.75rem;
+  }
+
+  .upload-zone {
+    border: 1.5px dashed var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .upload-zone:hover { border-color: #1D9E75; background: #E1F5EE22; }
+  .upload-zone.drag-over { border-color: #1D9E75; background: #E1F5EE33; }
+
+  .upload-icon { margin: 0 auto 0.75rem; width: 40px; height: 40px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .upload-icon svg { width: 18px; height: 18px; stroke: var(--color-text-secondary); }
+  .upload-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--color-text-tertiary); }
+  #file-input { display: none; }
+
+  .file-loaded {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0.75rem;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+  }
+  .file-icon { width: 36px; height: 36px; background: #E1F5EE; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .file-icon svg { width: 16px; height: 16px; stroke: #0F6E56; }
+  .file-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-size { font-size: 11px; color: var(--color-text-tertiary); }
+  .remove-btn { width: 24px; height: 24px; border: none; background: none; cursor: pointer; color: var(--color-text-tertiary); font-size: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .remove-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+
+  .profiles { display: flex; gap: 8px; }
+  .profile-btn {
+    flex: 1; padding: 0.6rem 0.5rem; border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md); background: var(--color-background-primary);
+    cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit;
+  }
+  .profile-btn:hover { border-color: #1D9E75; background: #E1F5EE22; }
+  .profile-btn.active { border-color: #1D9E75; background: #E1F5EE; }
+  .profile-btn .p-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); display: block; }
+  .profile-btn .p-desc { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; display: block; }
+  .profile-btn.active .p-name { color: #085041; }
+  .profile-btn.active .p-desc { color: #0F6E56; }
+
+  .eq-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    align-items: end;
+  }
+
+  .eq-band { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .eq-val { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--color-text-secondary); min-width: 32px; text-align: center; }
+  .eq-slider {
+    -webkit-appearance: slider-vertical;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 22px;
+    height: 100px;
+    cursor: pointer;
+    accent-color: #1D9E75;
+  }
+  .eq-freq { font-size: 10px; color: var(--color-text-tertiary); text-align: center; line-height: 1.2; }
+
+  .stem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stem-card {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .stem-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .stem-label { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .stem-vol { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+  .stem-range { flex: 1; accent-color: #1D9E75; }
+
+  .transport {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .play-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #1D9E75; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  .play-btn:hover { background: #0F6E56; }
+  .play-btn:active { transform: scale(0.96); }
+  .play-btn svg { width: 18px; height: 18px; fill: white; }
+
+  .waveform-wrap { flex: 1; position: relative; height: 44px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); overflow: hidden; cursor: pointer; }
+  #waveform-canvas { width: 100%; height: 100%; display: block; }
+  .progress-line { position: absolute; top: 0; left: 0; width: 0%; height: 100%; background: #1D9E7522; pointer-events: none; transition: width 0.1s linear; }
+
+  .time-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+  .toggle-label { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .toggle-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 1px; }
+
+  .toggle {
+    width: 38px; height: 22px; border-radius: 11px;
+    background: var(--color-border-secondary);
+    border: none; cursor: pointer; position: relative;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: white; transition: transform 0.2s;
+  }
+  .toggle.on { background: #1D9E75; }
+  .toggle.on::after { transform: translateX(16px); }
+
+  .gain-row { display: flex; align-items: center; gap: 10px; }
+  .gain-label { font-size: 12px; color: var(--color-text-secondary); width: 100px; }
+  .gain-range { flex: 1; accent-color: #1D9E75; }
+  .gain-val { font-size: 12px; font-family: 'Space Mono', monospace; color: var(--color-text-secondary); min-width: 38px; text-align: right; }
+
+  .no-audio-msg { font-size: 12px; color: var(--color-text-tertiary); text-align: center; padding: 0.75rem; }
+
+  .meter-wrap { height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .meter-bar { height: 100%; width: 0%; background: #1D9E75; border-radius: 3px; transition: width 0.08s; }
+
+  .freq-display { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--color-text-tertiary); margin-top: 4px; }
+</style>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 18V5l12-2v13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6" cy="18" r="3" stroke="white" stroke-width="2"/>
+        <circle cx="18" cy="16" r="3" stroke="white" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>HearMusic</h1>
+      <p>Music enhancement for hearing loss</p>
+    </div>
+    <div class="status-dot" id="status-dot"></div>
+  </div>
+
+  <div class="main">
+
+    <div class="card">
+      <div class="card-label">Audio source</div>
+      <div id="upload-zone" class="upload-zone">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="upload-title">Upload audio file</div>
+        <div class="upload-sub">WAV, MP3, OGG, FLAC — drag & drop or click</div>
+      </div>
+      <div id="file-info" style="display:none">
+        <div class="file-loaded">
+          <div class="file-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="file-name" id="file-name-label">audio.wav</div>
+            <div class="file-size" id="file-size-label">—</div>
+          </div>
+          <button class="remove-btn" id="remove-btn">✕</button>
+        </div>
+        <div class="meter-wrap" style="margin-top:8px"><div class="meter-bar" id="level-meter"></div></div>
+        <div class="freq-display" id="freq-info"></div>
+      </div>
+      <input type="file" id="file-input" accept="audio/*">
+    </div>
+
+    <div class="card">
+      <div class="card-label">Hearing loss profile</div>
+      <div class="profiles">
+        <button class="profile-btn active" data-profile="normal" onclick="setProfile('normal',this)">
+          <span class="p-name">Normal</span>
+          <span class="p-desc">No adjustment</span>
+        </button>
+        <button class="profile-btn" data-profile="mild" onclick="setProfile('mild',this)">
+          <span class="p-name">Mild</span>
+          <span class="p-desc">25–40 dB HL</span>
+        </button>
+        <button class="profile-btn" data-profile="moderate" onclick="setProfile('moderate',this)">
+          <span class="p-name">Moderate</span>
+          <span class="p-desc">40–70 dB HL</span>
+        </button>
+        <button class="profile-btn" data-profile="severe" onclick="setProfile('severe',this)">
+          <span class="p-name">Severe</span>
+          <span class="p-desc">70–90 dB HL</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">EQ bands (dB)</div>
+      <div class="eq-grid" id="eq-grid">
+        <!-- bands injected by JS -->
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Enhancement controls</div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">High-freq boost</div>
+          <div class="toggle-sub">Compensate for high-frequency loss</div>
+        </div>
+        <button class="toggle on" id="hf-toggle" onclick="toggleFeature('hf', this)"></button>
+      </div>
+      <div class="toggle-row" style="margin-bottom:0">
+        <div>
+          <div class="toggle-label">Dynamic compression</div>
+          <div class="toggle-sub">Reduce loud peaks, lift quiet sounds</div>
+        </div>
+        <button class="toggle on" id="comp-toggle" onclick="toggleFeature('comp', this)"></button>
+      </div>
+      <div style="border-top: 0.5px solid var(--color-border-tertiary); margin-top: 1rem; padding-top: 1rem; display: flex; flex-direction: column; gap: 8px;">
+        <div class="gain-row">
+          <div class="gain-label">Master gain</div>
+          <input type="range" class="gain-range" id="master-gain" min="0" max="4" step="0.1" value="1" oninput="updateGain('master',this)">
+          <div class="gain-val" id="master-gain-val">1.0×</div>
+        </div>
+        <div class="gain-row">
+          <div class="gain-label">Voice clarity</div>
+          <input type="range" class="gain-range" id="voice-gain" min="0" max="4" step="0.1" value="1" oninput="updateGain('voice',this)">
+          <div class="gain-val" id="voice-gain-val">1.0×</div>
+        </div>
+        <div class="gain-row">
+          <div class="gain-label">Speech lift (2kHz)</div>
+          <input type="range" class="gain-range" id="speech-boost" min="0" max="20" step="0.5" value="0" oninput="updateSpeechBoost(this)">
+          <div class="gain-val" id="speech-boost-val">0 dB</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Playback</div>
+      <div id="no-audio-msg" class="no-audio-msg">Load an audio file to begin</div>
+      <div id="transport" style="display:none">
+        <div class="transport">
+          <button class="play-btn" id="play-btn" onclick="togglePlay()">
+            <svg id="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          </button>
+          <div class="waveform-wrap" onclick="seekAudio(event)">
+            <canvas id="waveform-canvas"></canvas>
+            <div class="progress-line" id="progress-line"></div>
+          </div>
+          <div class="time-display" id="time-display">0:00 / 0:00</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let audioCtx, sourceNode, analyserNode, gainNode, compressorNode, hfFilterNode, speechFilterNode, voiceFilterNode;
+let eqFilters = [];
+let audioBuffer = null;
+let startTime = 0, pauseOffset = 0, isPlaying = false;
+let animFrame;
+let waveformData = null;
+
+const EQ_BANDS = [
+  { freq: 125, label: '125' },
+  { freq: 250, label: '250' },
+  { freq: 500, label: '500' },
+  { freq: 1000, label: '1k' },
+  { freq: 2000, label: '2k' },
+  { freq: 4000, label: '4k' },
+  { freq: 8000, label: '8k' },
+  { freq: 16000, label: '16k' },
+];
+
+const PROFILES = {
+  normal: [0, 0, 0, 0, 0, 0, 0, 0],
+  mild:   [0, 0, 2, 5, 8, 10, 12, 10],
+  moderate:[2, 3, 5, 8, 12, 18, 22, 20],
+  severe: [5, 8, 12, 16, 22, 30, 32, 28],
+};
+
+let currentProfile = 'normal';
+let featureFlags = { hf: true, comp: true };
+let eqValues = [...PROFILES.normal];
+let masterGain = 1, voiceGain = 1, speechBoostDb = 0;
+
+function buildEqGrid() {
+  const grid = document.getElementById('eq-grid');
+  grid.innerHTML = '';
+  EQ_BANDS.forEach((band, i) => {
+    const col = document.createElement('div');
+    col.className = 'eq-band';
+    col.innerHTML = `
+      <div class="eq-val" id="eq-val-${i}">${eqValues[i].toFixed(0)} dB</div>
+      <input type="range" class="eq-slider" min="-12" max="36" step="0.5" value="${eqValues[i]}" id="eq-${i}" oninput="updateEqBand(${i},this)">
+      <div class="eq-freq">${band.label}<br>Hz</div>
+    `;
+    grid.appendChild(col);
+  });
+}
+
+function updateEqBand(i, el) {
+  eqValues[i] = parseFloat(el.value);
+  document.getElementById(`eq-val-${i}`).textContent = eqValues[i].toFixed(0) + ' dB';
+  if (eqFilters[i]) eqFilters[i].gain.value = eqValues[i];
+}
+
+function setProfile(name, btn) {
+  currentProfile = name;
+  document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  eqValues = [...PROFILES[name]];
+  EQ_BANDS.forEach((_, i) => {
+    const el = document.getElementById(`eq-${i}`);
+    if (el) { el.value = eqValues[i]; }
+    document.getElementById(`eq-val-${i}`).textContent = eqValues[i].toFixed(0) + ' dB';
+    if (eqFilters[i]) eqFilters[i].gain.value = eqValues[i];
+  });
+}
+
+function toggleFeature(feat, btn) {
+  featureFlags[feat] = !featureFlags[feat];
+  btn.classList.toggle('on', featureFlags[feat]);
+  if (!audioCtx) return;
+  if (feat === 'hf' && hfFilterNode) hfFilterNode.gain.value = featureFlags.hf ? (currentProfile === 'normal' ? 0 : 8) : 0;
+  if (feat === 'comp' && compressorNode) compressorNode.threshold.value = featureFlags.comp ? -24 : 0;
+}
+
+function updateGain(type, el) {
+  const val = parseFloat(el.value);
+  if (type === 'master') {
+    masterGain = val;
+    document.getElementById('master-gain-val').textContent = val.toFixed(1) + '×';
+    if (gainNode) gainNode.gain.value = masterGain;
+  } else if (type === 'voice') {
+    voiceGain = val;
+    document.getElementById('voice-gain-val').textContent = val.toFixed(1) + '×';
+    if (voiceFilterNode) voiceFilterNode.gain.value = (voiceGain - 1) * 12;
+  }
+}
+
+function updateSpeechBoost(el) {
+  speechBoostDb = parseFloat(el.value);
+  document.getElementById('speech-boost-val').textContent = speechBoostDb.toFixed(0) + ' dB';
+  if (speechFilterNode) speechFilterNode.gain.value = speechBoostDb;
+}
+
+function setupAudioContext() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = masterGain;
+  compressorNode = audioCtx.createDynamicsCompressor();
+  compressorNode.threshold.value = featureFlags.comp ? -24 : 0;
+  compressorNode.knee.value = 30;
+  compressorNode.ratio.value = 6;
+  compressorNode.attack.value = 0.003;
+  compressorNode.release.value = 0.25;
+  analyserNode = audioCtx.createAnalyser();
+  analyserNode.fftSize = 2048;
+  eqFilters = EQ_BANDS.map((band, i) => {
+    const f = audioCtx.createBiquadFilter();
+    f.type = i === 0 ? 'lowshelf' : i === EQ_BANDS.length - 1 ? 'highshelf' : 'peaking';
+    f.frequency.value = band.freq;
+    f.gain.value = eqValues[i];
+    f.Q.value = 1.4;
+    return f;
+  });
+  hfFilterNode = audioCtx.createBiquadFilter();
+  hfFilterNode.type = 'highshelf';
+  hfFilterNode.frequency.value = 4000;
+  hfFilterNode.gain.value = featureFlags.hf ? (currentProfile === 'normal' ? 0 : 8) : 0;
+  speechFilterNode = audioCtx.createBiquadFilter();
+  speechFilterNode.type = 'peaking';
+  speechFilterNode.frequency.value = 2000;
+  speechFilterNode.Q.value = 1;
+  speechFilterNode.gain.value = speechBoostDb;
+  voiceFilterNode = audioCtx.createBiquadFilter();
+  voiceFilterNode.type = 'peaking';
+  voiceFilterNode.frequency.value = 3500;
+  voiceFilterNode.Q.value = 0.8;
+  voiceFilterNode.gain.value = (voiceGain - 1) * 12;
+  let chain = [compressorNode, ...eqFilters, hfFilterNode, speechFilterNode, voiceFilterNode, gainNode, analyserNode];
+  for (let i = 0; i < chain.length - 1; i++) chain[i].connect(chain[i + 1]);
+  analyserNode.connect(audioCtx.destination);
+  return chain[0];
+}
+
+function createSourceNode(buffer) {
+  sourceNode = audioCtx.createBufferSource();
+  sourceNode.buffer = buffer;
+  sourceNode.connect(setupAudioContext());
+  sourceNode.onended = () => {
+    if (isPlaying) { isPlaying = false; pauseOffset = 0; updatePlayIcon(); cancelAnimationFrame(animFrame); }
+  };
+}
+
+function togglePlay() {
+  if (!audioBuffer) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (isPlaying) {
+    pauseOffset = (audioCtx.currentTime - startTime) % audioBuffer.duration;
+    sourceNode.stop();
+    isPlaying = false;
+    cancelAnimationFrame(animFrame);
+  } else {
+    createSourceNode(audioBuffer);
+    startTime = audioCtx.currentTime - pauseOffset;
+    sourceNode.start(0, pauseOffset);
+    isPlaying = true;
+    animFrame = requestAnimationFrame(updateUI);
+    document.getElementById('status-dot').classList.add('active');
+  }
+  updatePlayIcon();
+}
+
+function updatePlayIcon() {
+  const icon = document.getElementById('play-icon');
+  if (isPlaying) {
+    icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    icon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+  }
+}
+
+function seekAudio(e) {
+  if (!audioBuffer) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  pauseOffset = ratio * audioBuffer.duration;
+  if (isPlaying) { sourceNode.stop(); createSourceNode(audioBuffer); startTime = audioCtx.currentTime - pauseOffset; sourceNode.start(0, pauseOffset); }
+}
+
+function updateUI() {
+  if (!isPlaying || !audioBuffer) return;
+  const elapsed = (audioCtx.currentTime - startTime) % audioBuffer.duration;
+  const ratio = elapsed / audioBuffer.duration;
+  document.getElementById('progress-line').style.width = (ratio * 100).toFixed(2) + '%';
+  const fmt = t => { const m = Math.floor(t/60); const s = Math.floor(t%60); return `${m}:${s.toString().padStart(2,'0')}`; };
+  document.getElementById('time-display').textContent = `${fmt(elapsed)} / ${fmt(audioBuffer.duration)}`;
+  const data = new Uint8Array(analyserNode.frequencyBinCount);
+  analyserNode.getByteFrequencyData(data);
+  const avg = data.reduce((a,b)=>a+b,0)/data.length;
+  document.getElementById('level-meter').style.width = Math.min(100, (avg/128)*100).toFixed(0) + '%';
+  drawWaveformProgress(ratio);
+  animFrame = requestAnimationFrame(updateUI);
+}
+
+function drawWaveformProgress(progress) {
+  if (!waveformData) return;
+  const canvas = document.getElementById('waveform-canvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const baseColor = isDark ? 'rgba(200,200,200,0.3)' : 'rgba(0,0,0,0.15)';
+  const playedColor = '#1D9E75';
+  const mid = h / 2;
+  const step = Math.ceil(waveformData.length / w);
+  for (let x = 0; x < w; x++) {
+    let max = 0;
+    for (let j = 0; j < step; j++) {
+      const val = Math.abs(waveformData[x * step + j] || 0);
+      if (val > max) max = val;
+    }
+    const barH = Math.max(2, max * (h * 0.85));
+    ctx.fillStyle = x < w * progress ? playedColor : baseColor;
+    ctx.fillRect(x, mid - barH / 2, 1, barH);
+  }
+}
+
+function renderWaveform(buffer) {
+  const canvas = document.getElementById('waveform-canvas');
+  canvas.width = canvas.offsetWidth || 400;
+  canvas.height = canvas.offsetHeight || 44;
+  const data = buffer.getChannelData(0);
+  waveformData = data;
+  drawWaveformProgress(0);
+}
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.decodeAudioData(e.target.result, buf => {
+      audioBuffer = buf;
+      pauseOffset = 0;
+      if (isPlaying && sourceNode) { sourceNode.stop(); isPlaying = false; updatePlayIcon(); }
+      document.getElementById('upload-zone').style.display = 'none';
+      document.getElementById('file-info').style.display = 'block';
+      document.getElementById('file-name-label').textContent = file.name;
+      document.getElementById('file-size-label').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB · ' + buf.numberOfChannels + 'ch · ' + (buf.sampleRate / 1000).toFixed(1) + ' kHz';
+      document.getElementById('no-audio-msg').style.display = 'none';
+      document.getElementById('transport').style.display = 'block';
+      setTimeout(() => renderWaveform(buf), 50);
+    }, () => alert('Could not decode audio file.'));
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('upload-zone').addEventListener('click', () => document.getElementById('file-input').click());
+document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+
+document.getElementById('remove-btn').addEventListener('click', () => {
+  if (isPlaying && sourceNode) { sourceNode.stop(); isPlaying = false; updatePlayIcon(); }
+  audioBuffer = null; waveformData = null; pauseOffset = 0;
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('file-info').style.display = 'none';
+  document.getElementById('no-audio-msg').style.display = 'block';
+  document.getElementById('transport').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('status-dot').classList.remove('active');
+  document.getElementById('progress-line').style.width = '0%';
+  document.getElementById('time-display').textContent = '0:00 / 0:00';
+});
+
+buildEqGrid();
+</script>
