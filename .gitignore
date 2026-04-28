@@ -1,0 +1,12 @@
+
+__pycache__/
+*.pyc
+*.wav
+*.mp3
+*.flac
+*.ogg
+drive/
+.ipynb_checkpoints/
+Enhanced_Outputs/
+.config/
+sample_data/
